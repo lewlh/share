@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:${CLOUDBEAVER_IMAGE_VERSION}
+    hostname: cloudbeaver
+    container_name: cloudbeaver
+    expose:
+      - '8978'
+    ports:
+      - '${CLOUDBEAVER_PORT}:8978'
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/cloudbeaver/data:/opt/cloudbeaver/workspace
+    networks:
+      - myscaledb_network
+
+  keeper1:
+    image: myscale/myscaledb:${MYSCALEDB_IMAGE_VERSION}
+    hostname: keeper1
+    container_name: keeper1
+    expose:
+      # clickhouse-keeper 端口
+      - '7000'
+      - '9181'
+      - '9234'
+    command: >
+      bash -c "clickhouse-keeper --config-file=/etc/clickhouse-server/config.d/keeper.xml"
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/keeper1/data:/var/lib/clickhouse-keeper
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/keeper1/log:/var/log/clickhouse-keeper
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/configs/keeper_1.xml:/etc/clickhouse-server/config.d/keeper.xml
+    networks:
+      - myscaledb_network
+
+  keeper2:
+    image: myscale/myscaledb:${MYSCALEDB_IMAGE_VERSION}
+    hostname: keeper2
+    container_name: keeper2
+    expose:
+      # clickhouse-keeper 端口
+      - '7000'
+      - '9181'
+      - '9234'
+    command: >
+      bash -c "clickhouse-keeper --config-file=/etc/clickhouse-server/config.d/keeper.xml"
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/keeper2/data:/var/lib/clickhouse-keeper
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/keeper2/log:/var/log/clickhouse-keeper
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/configs/keeper_2.xml:/etc/clickhouse-server/config.d/keeper.xml
+    networks:
+      - myscaledb_network
+
+  keeper3:
+    image: myscale/myscaledb:${MYSCALEDB_IMAGE_VERSION}
+    hostname: keeper3
+    container_name: keeper3
+    expose:
+      # clickhouse-keeper 端口
+      - '7000'
+      - '9181'
+      - '9234'
+    command: >
+      bash -c "clickhouse-keeper --config-file=/etc/clickhouse-server/config.d/keeper.xml"
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/keeper3/data:/var/lib/clickhouse-keeper
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/keeper3/log:/var/log/clickhouse-keeper
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/configs/keeper_3.xml:/etc/clickhouse-server/config.d/keeper.xml
+    networks:
+      - myscaledb_network
+
+networks:
+  myscaledb_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/24

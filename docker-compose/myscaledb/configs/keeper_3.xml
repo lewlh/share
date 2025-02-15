@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<clickhouse>
+    <listen_host>0.0.0.0</listen_host>
+    <logger>
+        <level>information</level>
+        <log>/var/log/clickhouse-keeper/clickhouse-keeper.log</log>
+        <errorlog>/var/log/clickhouse-keeper/clickhouse-keeper.err.log</errorlog>
+        <size>100M</size>
+        <count>10</count>
+        <console>1</console>
+    </logger>
+    <keeper_server>
+        <tcp_port>9181</tcp_port>
+        <path>/var/lib/clickhouse-keeper</path>
+        <server_id>3</server_id>
+        <coordination_settings>
+            <operation_timeout_ms>10000</operation_timeout_ms>
+            <session_timeout_ms>30000</session_timeout_ms>
+            <raft_logs_level>information</raft_logs_level>
+        </coordination_settings>
+
+        <raft_configuration>
+            <server>
+                <id>1</id>
+                <hostname>keeper1</hostname>
+                <port>9234</port>
+            </server>
+            <server>
+                <id>2</id>
+                <hostname>keeper2</hostname>
+                <port>9234</port>
+            </server>
+            <server>
+                <id>3</id>
+                <hostname>keeper3</hostname>
+                <port>9234</port>
+            </server>
+        </raft_configuration>
+    </keeper_server>
+    <prometheus>
+        <endpoint>/metrics</endpoint>
+        <port>7000</port>
+        <metrics>true</metrics>
+        <events>true</events>
+        <asynchronous_metrics>true</asynchronous_metrics>
+        <!-- https://github.com/ClickHouse/ClickHouse/issues/46136 -->
+        <status_info>false</status_info>
+    </prometheus>
+</clickhouse>
