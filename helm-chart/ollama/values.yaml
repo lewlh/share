@@ -1,0 +1,83 @@
+# Default values for ollama.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: harbor.moqi.com.cn/docker/ollama/ollama
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: 0.5.8
+
+nodePort:
+  # 当为 true 时，网络接口使用 NodePort，否则为 ClusterIP
+  enabled: true
+  # 当使用 NodePort，外部服务可以直接通过 k8s集群IP:port 端口访问服务
+  port: 30434
+
+config:
+  # ollama home path
+  ollamaHomePath: /mnt/cephfs/share/public/ollama
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  requests:
+    cpu: 2
+    memory: 16Gi
+    nvidia.com/gpu: 1
+  limits:
+    cpu: 10
+    memory: 24Gi
+    nvidia.com/gpu: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 400
+  targetMemoryUtilizationPercentage: 150
+
+nodeSelector:
+  kubernetes.io/arch: amd64
+  gpu: GTX1080Ti
+
+
+tolerations: []
+
+affinity: {}
+
+proxy:
+  image:
+    repository: harbor.moqi.com.cn/docker/envoyproxy/envoy
+    pullPolicy: Always
+    tag: v1.33.0
+  numRetries: 5
+  maxRequestsPerConnection: 8
+  lb:
+    choiceCount: 5
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 640Mi

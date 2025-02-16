@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ollama.fullname" . }}
+  labels:
+    {{- include "ollama.labels" . | nindent 4 }}
+    component: proxy
+spec:
+{{- if .Values.nodePort.enabled }}
+  type: NodePort
+  ports:
+    - name: proxy-port
+      nodePort: {{ .Values.nodePort.port }}
+      port: 11434
+      targetPort: proxy-port
+      protocol: TCP
+  selector:
+    {{- include "ollama.selectorLabels" . | nindent 4 }}
+    component: proxy
+{{- else }}
+  type: ClusterIP
+  ports:
+    - name: proxy-port
+      port: 11434
+      targetPort: proxy-port
+      protocol: TCP
+  selector:
+    {{- include "ollama.selectorLabels" . | nindent 4 }}
+    component: proxy
+{{- end }}

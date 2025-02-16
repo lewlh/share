@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ollama.fullname" . }}-proxy
+  labels:
+    {{- include "ollama.labels" . | nindent 4 }}
+    component: proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "ollama.selectorLabels" . | nindent 6 }}
+      component: proxy
+  template:
+    metadata:
+      labels:
+        {{- include "ollama.selectorLabels" . | nindent 8 }}
+        component: proxy
+    spec:
+      initContainers:
+        - name: wait-for-server
+          image: harbor.moqi.com.cn/kubernetes/busybox:1.34.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVICE
+              value: {{ include "ollama.fullname" . }}-headless
+            - name: PORT
+              value: "11434"
+          command: [ "/bin/sh", "-c", "until nc -zv $SERVICE $PORT -w1; do echo 'waiting for ollama'; sleep 1; done" ]
+      containers:
+        - name: proxy
+          image: "{{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}"
+          imagePullPolicy: {{ .Values.proxy.image.pullPolicy }}
+          ports:
+          - name: proxy-port
+            containerPort: 11434
+          - name: admin-port
+            containerPort: 9901
+          readinessProbe:
+            tcpSocket:
+              port: proxy-port
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: proxy-port
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+          - name: proxy-config
+            mountPath: /etc/envoy
+          resources:
+            {{- toYaml .Values.proxy.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: proxy-config
+          configMap:
+            name: {{ include "ollama.fullname" . }}-proxy-conf
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                {{- include "ollama.selectorLabels" . | nindent 16 }}
+                component: server
+            topologyKey: kubernetes.io/hostname
