@@ -691,4 +691,4 @@ Query id: 1be83841-687d-41aa-9bcf-f3f7ad522fbe
 + [Configuring ClickHouse Keeper with unique paths](https://clickhouse.com/docs/en/guides/sre/keeper/clickhouse-keeper#configuring-clickhouse-keeper-with-unique-paths)
 + [clickhouse-keeper](https://clickhouse.com/docs/zh/operations/clickhouse-keeper)
 + [ClickHouse Keeper User Guide](https://clickhouse.com/docs/en/guides/sre/keeper/clickhouse-keeper#clickhouse-keeper-user-guide)
-+ [Why is ClickHouse so fast?](./WhyIsClickHouseSoFast.md)
++ [Why is ClickHouse so fast?](https://lewlh.github.io/2024/05/24/WhyIsClickHouseSoFast/)
