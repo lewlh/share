@@ -2,38 +2,21 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+config:
+  # ollama home path
+  ollamaHomePath: /mnt/cephfs/share/public/ollama
+
 image:
-  repository: harbor.moqi.com.cn/docker/ollama/ollama
+  repository: ollama/ollama
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 0.5.8
+  tag: 0.5.11
 
 nodePort:
   # 当为 true 时，网络接口使用 NodePort，否则为 ClusterIP
   enabled: true
   # 当使用 NodePort，外部服务可以直接通过 k8s集群IP:port 端口访问服务
   port: 30434
-
-config:
-  # ollama home path
-  ollamaHomePath: /mnt/cephfs/share/public/ollama
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
 
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -50,25 +33,34 @@ resources:
     nvidia.com/gpu: 1
 
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
   maxReplicas: 2
   targetCPUUtilizationPercentage: 400
   targetMemoryUtilizationPercentage: 150
 
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+podAnnotations: {}
+podSecurityContext: {}
+  # fsGroup: 2000
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 nodeSelector:
-  kubernetes.io/arch: amd64
   gpu: GTX1080Ti
-
-
 tolerations: []
-
 affinity: {}
 
 proxy:
   image:
-    repository: harbor.moqi.com.cn/docker/envoyproxy/envoy
-    pullPolicy: Always
+    repository: envoyproxy/envoy
+    pullPolicy: IfNotPresent
     tag: v1.33.0
   numRetries: 5
   maxRequestsPerConnection: 8
