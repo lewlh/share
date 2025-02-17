@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ollama.fullname" . }}-headless
+  labels:
+    {{- include "ollama.labels" . | nindent 4 }}
+    component: server
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: server-port
+      port: 11434
+      targetPort: server-port
+      protocol: TCP
+  selector:
+    {{- include "ollama.selectorLabels" . | nindent 4 }}
+    component: server

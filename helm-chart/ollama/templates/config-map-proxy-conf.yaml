@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ollama.fullname" . }}-proxy-conf
+  labels:
+    {{- include "ollama.labels" . | nindent 4 }}
+data:
+  envoy.yaml: |-
+    static_resources:
+      listeners:
+      - name: listener_0
+        address:
+          socket_address:
+            address: 0.0.0.0
+            port_value: 11434
+        filter_chains:
+        - filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: ingress_http
+              access_log:
+              - name: envoy.access_loggers.stdout
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
+              route_config:
+                name: local_route
+                virtual_hosts:
+                - name: local_service
+                  domains: ["*"]
+                  routes:
+                  - match:
+                      prefix: "/"
+                    route:
+                      cluster: ollama_cluster
+                      timeout: 300s
+              http_filters:
+              - name: envoy.filters.http.router
+                typed_config: 
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+      clusters:
+      - name: ollama_cluster
+        connect_timeout: 1s
+        type: STRICT_DNS
+        dns_lookup_family: V4_ONLY
+        max_requests_per_connection: {{ .Values.proxy.maxRequestsPerConnection }}  
+        lb_policy: LEAST_REQUEST
+        least_request_lb_config:
+          choice_count: {{ .Values.proxy.lb.choiceCount }}       
+        load_assignment:
+          cluster_name: ollama_cluster
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:         
+                    address: {{ include "ollama.fullname" . }}-headless
+                    port_value: 11434
+    admin:
+      access_log_path: /dev/stdout
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 9901
